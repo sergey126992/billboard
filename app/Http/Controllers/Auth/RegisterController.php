@@ -45,7 +45,7 @@ class RegisterController extends Controller
 
     public function verify($token)
     {
-        if (!$user = User::where('verify_token', $token)->first()) {
+        if (!$user = User::where('verify_code', $token)->first()) {
             return redirect()->route('login')->with('error', 'Sorry your link not verified');
         }
 
@@ -54,7 +54,7 @@ class RegisterController extends Controller
         }
 
         $user->status = User::STATUS_ACTIVE;
-        $user->token = null;
+        $user->verify_code = null;
         $user->save();
 
         return redirect()->route('login')->with('success', 'Your email is verified. Now you can login.');
@@ -87,7 +87,7 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'verify_token' => Str::random(),
+            'verify_code' => Str::random(),
             'status' => User::STATUS_WAIT
         ]);
         \Mail::to($user->email)->send(new VerifyMail($user));

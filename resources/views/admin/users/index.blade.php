@@ -2,7 +2,6 @@
 
 @section('content')
     @include('admin.users._nav')
-
     <p><a href="{{ route('admin.users.create') }}" class="btn btn-success">Add User</a></p>
 
     <div class="card mb-3">
@@ -73,6 +72,19 @@
         </thead>
         <tbody>
 
+        {{--@foreach ($users as $user)
+            <tr>
+                <td>{{ $user->id }}</td>
+                <td><a href="{{ route('admin.users.show', $user) }}">{{ $user->name }}</a></td>
+                <td>{{ $user->email }}</td>
+                <td>
+                        <span class="badge badge-secondary">Waiting</span>
+                </td>
+                <td>
+                        <span class="badge badge-danger">Admin</span>
+                </td>
+            </tr>
+        @endforeach--}}
         @foreach ($users as $user)
             <tr>
                 <td>{{ $user->id }}</td>
@@ -89,6 +101,8 @@
                 <td>
                     @if ($user->isAdmin())
                         <span class="badge badge-danger">Admin</span>
+                    @elseif ($user->isModerator())
+                        <span class="badge badge-dark">Moderator</span>
                     @else
                         <span class="badge badge-secondary">User</span>
                     @endif

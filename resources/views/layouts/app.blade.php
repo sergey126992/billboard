@@ -72,11 +72,22 @@
             </div>
         </nav>
 
-        <main class="py-4">
-            @section('breadcrumbs', Breadcrumbs::render())
-            @yield('breadcrumbs')
-            @yield('content')
+
+        <main class="app-content py-3">
+            <div class="container">
+                @section('breadcrumbs', Breadcrumbs::render())
+                @yield('breadcrumbs')
+                @yield('content')
+            </div>
         </main>
+
+        <footer>
+            <div class="container">
+                <div class="border-top pt-3">
+                    <p>&copy; {{ date('Y') }} - Adverts</p>
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

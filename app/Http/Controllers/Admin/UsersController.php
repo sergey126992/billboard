@@ -2,18 +2,34 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\User;
+use App\Http\Requests\Admin\User\CreateRequest;
+use App\Http\Requests\Admin\User\UpdateRequest;
+use App\Entity\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
+use Psy\Util\Str;
 
 class UsersController extends Controller
 {
+
+    //private $register;
+
+    public function __construct(/*RegisterService $register*/)
+    {
+        //$this->register = $register;
+        //$this->middleware('can:manage-users');
+    }
     public function index()
     {
-        $users = User::orderBy('id', 'desc')->paginate(20);
+        $statuses = [
+            User::STATUS_WAIT => 'Waiting',
+            User::STATUS_ACTIVE => 'Active',
+        ];
+        $users = User::orderBy('id', 'desc')->paginate(10);
+        $roles = User::rolesList();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', compact('users', 'statuses', 'roles'));
     }
 
     public function create()
@@ -21,18 +37,12 @@ class UsersController extends Controller
         return view('admin.users.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateRequest $request)
     {
-        $this->validate($request, [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-        ]);
-
-        $user = User::create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'status' => User::STATUS_ACTIVE,
-        ]);
+        $user = User::new(
+            $request['name'],
+            $request['email']
+        );
 
         return redirect()->route('admin.users.show', $user);
     }
@@ -50,19 +60,19 @@ class UsersController extends Controller
             User::STATUS_ACTIVE => 'Active',
         ];
 
-        return view('admin.user.edit', compact('user', 'statuses'));
+        $roles = User::rolesList();
+
+        return view('admin.users.edit', compact('user', 'statuses', 'roles'));
     }
 
 
-    public function update(Request $request, User $user)
+    public function update(UpdateRequest $request, User $user)
     {
-        $data = $this->validate($request, [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255|email|unique:users,id' . $user->id,
-            'status' => ['required', 'string', Rule::in([User::STATUS_WAIT, User::STATUS_ACTIVE])],
-        ]);
+        $user->update($request->only(['name', 'email']));
 
-        $user->update($data);
+        if ($request['role'] !== $user->role) {
+            $user->changeRole($request['role']);
+        }
 
         return redirect()->route('admin.users.show', $user);
     }
